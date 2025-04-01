@@ -18,34 +18,28 @@ function throttle {
 // approach 1
 
 function throttle(fn, delay) {
-    let lastTime = 0;
-    let timer;
+    let lastTime = 0; // Stores the last execution time
+    let timer; // Stores timeout ID for delayed execution
+
     return function (...args) {
+        let context = this; // Preserve `this` reference
+        let now = Date.now(); // Get current timestamp
 
-        let context = this;
-        let now = Date.now();
-
-        if (!lastTime) {
-            fn.apply(context, args);
-        } else {
-
-            clearTimeout(timer);
-            const diff = now - lastTime;
-            timer = setTimeout(() => {
-                if (diff >= delay) {
-                    fn.apply(context, args);
-                }
-            }, delay - timer)
-
-        }
-
+        // If enough time has passed, execute immediately
         if (now - lastTime >= delay) {
-            fn.apply(this, args);
-            lastTime = now;
+            fn.apply(context, args);
+            lastTime = now; // Update last execution time
+        } else {
+            // Otherwise, schedule execution after remaining time
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                fn.apply(context, args);
+                lastTime = Date.now(); // Update last execution time after execution
+            }, delay - (now - lastTime)); // Correct delay calculation
         }
-
-    }
+    };
 }
+
 
 window.addEventListener('scroll', throttle(() => {
     console.log('Scroll event triggered!');
